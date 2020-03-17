@@ -105,24 +105,17 @@ impl CommandExecutor {
 
     fn update_project(
         &self,
-        code: Option<String>,
+        code: String,
         description: Option<String>,
         logo: Option<String>,
         file_path: Option<PathBuf>,
     ) -> Result<String> {
         let project = match file_path {
             Some(path) => from_file(path)?,
-            None => patch::Project {
-                code: code.ok_or(Error::InputError(
-                    "Missing compulsory 'code' field".to_owned(),
-                ))?,
-                description,
-                logo,
-            },
+            None => patch::Project { description, logo },
         };
-        let code = project.code.clone();
 
-        match self.list_the_docs.update_project(&project)? {
+        match self.list_the_docs.update_project(&code, &project)? {
             Some(project) => Ok(to_string(&project, self.pretty_print)),
             None => Err(Error::InputError(format!(
                 "Project with code '{}' not found",
@@ -169,13 +162,12 @@ impl CommandExecutor {
     fn add_roles(
         &self,
         user_name: String,
-        project_role: Option<Vec<ProjectRole>>,
+        project_role: Vec<ProjectRole>,
         file_path: Option<PathBuf>,
     ) -> Result<String> {
         let roles: Vec<_> = match file_path {
             Some(path) => from_file(path)?,
             None => project_role
-                .ok_or(Error::InputError("Missing project roles to add".to_owned()))?
                 .into_iter()
                 .map(
                     |ProjectRole {

@@ -74,12 +74,16 @@ impl ListTheDocs {
         }
     }
 
-    pub fn update_project(&self, project: &patch::Project) -> Result<Option<get::Project>> {
+    pub fn update_project(
+        &self,
+        code: &str,
+        project: &patch::Project,
+    ) -> Result<Option<get::Project>> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
             "Cannot update a project if API key is not provided".to_owned(),
         ))?;
 
-        let endpoint_url = &[&self.base_url, "/api/v2/projects/", &project.code].concat();
+        let endpoint_url = &[&self.base_url, "/api/v2/projects/", code].concat();
         let response = minreq::patch(endpoint_url)
             .with_header("Api-Key", api_key)
             .with_json(project)?

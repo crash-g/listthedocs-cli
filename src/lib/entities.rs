@@ -63,8 +63,6 @@ pub mod patch {
 
     #[derive(Debug, Serialize, Deserialize)]
     pub struct Project {
-        #[serde(skip_serializing)]
-        pub code: String,
         pub description: Option<String>,
         pub logo: Option<String>,
     }

@@ -55,20 +55,17 @@ pub enum ProjectCommand {
     /// Add a new project
     Add {
         /// The title of the project
-        #[structopt(long)]
         title: Option<String>,
 
         /// A short description
-        #[structopt(long)]
         description: Option<String>,
 
         /// A link to a logo
-        #[structopt(long)]
         logo: Option<String>,
 
         /// Path to a json file containing the definition of the project to add.
-        /// If given, this takes priority over the other options.
-        #[structopt(parse(from_os_str))]
+        /// If given, no arguments must be passed.
+        #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
 
@@ -84,11 +81,10 @@ pub enum ProjectCommand {
     /// Update an existing project
     Update {
         /// The code of the project, as returned upon insertion
-        #[structopt(long)]
-        code: Option<String>,
+        code: String,
 
         /// A short description
-        #[structopt(long)]
+        #[structopt(long = "desc")]
         description: Option<String>,
 
         /// A link to a logo
@@ -96,8 +92,8 @@ pub enum ProjectCommand {
         logo: Option<String>,
 
         /// Path to a json file containing the definition of the project to update.
-        /// If given, this takes priority over all other options.
-        #[structopt(parse(from_os_str))]
+        /// If given, no arguments must be passed.
+        #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
 
@@ -117,15 +113,14 @@ pub enum VersionCommand {
 pub enum UserCommand {
     Add {
         /// The name of the user
-        #[structopt(long)]
         name: Option<String>,
 
-        #[structopt(long)]
+        /// Whether the use is an admin or not
         is_admin: Option<bool>,
 
         /// Path to a json file containing the definition of the user to add.
-        /// If given, this takes priority over all other options.
-        #[structopt(parse(from_os_str))]
+        /// If given, no arguments must be passed.
+        #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
 
@@ -161,16 +156,14 @@ impl FromStr for ProjectRole {
 pub enum RoleCommand {
     Add {
         /// The name of the user
-        #[structopt(long = "user")]
         user_name: String,
 
         /// A list of roles to add
-        #[structopt(long = "pr")]
-        project_role: Option<Vec<ProjectRole>>,
+        project_role: Vec<ProjectRole>,
 
         /// Path to a json file containing the definition of the role to add.
-        /// If given, this takes priority over all other options.
-        #[structopt(parse(from_os_str))]
+        /// If given, no arguments must be passed.
+        #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
 }
