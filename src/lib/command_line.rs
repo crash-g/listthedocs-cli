@@ -17,11 +17,9 @@ pub struct Opt {
     #[structopt(short, long, parse(from_os_str))]
     pub config: Option<PathBuf>,
 
-    /// The output is JSON in case of success, unless this flag is
-    /// given, in which case the output will be nicely formatted
-    /// to make it easier to read.
+    /// The output is human-readable by default. Use this option for JSON.
     #[structopt(short, long)]
-    pub pretty_print: bool,
+    pub json: bool,
 
     #[structopt(subcommand)]
     pub cmd: Command,

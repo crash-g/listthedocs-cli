@@ -21,7 +21,7 @@ pub fn execute_command() -> Result<String> {
     let list_the_docs = make_client(opt.url.clone(), opt.api_key.clone(), &opt.config)?;
     let executor = CommandExecutor {
         list_the_docs: list_the_docs,
-        pretty_print: opt.pretty_print,
+        json_output: opt.json,
     };
 
     match opt.cmd {
@@ -70,7 +70,7 @@ pub fn execute_command() -> Result<String> {
 
 pub struct CommandExecutor {
     list_the_docs: ListTheDocs,
-    pretty_print: bool,
+    json_output: bool,
 }
 
 impl CommandExecutor {
@@ -94,19 +94,19 @@ impl CommandExecutor {
             },
         };
         let added_project = self.list_the_docs.add_project(&project)?;
-        Ok(to_string(&added_project, self.pretty_print))
+        Ok(to_string(&added_project, self.json_output))
     }
 
     fn get_project(&self, code: String) -> Result<String> {
         match self.list_the_docs.get_project(&code)? {
-            Some(project) => Ok(to_string(&project, self.pretty_print)),
+            Some(project) => Ok(to_string(&project, self.json_output)),
             None => Ok(format!("Project with code '{}' not found", code)),
         }
     }
 
     fn get_all_projects(&self) -> Result<String> {
         let projects = self.list_the_docs.get_all_projects()?;
-        Ok(to_string(&projects, self.pretty_print))
+        Ok(to_string(&projects, self.json_output))
     }
 
     fn update_project(
@@ -122,7 +122,7 @@ impl CommandExecutor {
         };
 
         match self.list_the_docs.update_project(&code, &project)? {
-            Some(project) => Ok(to_string(&project, self.pretty_print)),
+            Some(project) => Ok(to_string(&project, self.json_output)),
             None => Err(Error::InputError(format!(
                 "Project with code '{}' not found",
                 &code
@@ -150,19 +150,19 @@ impl CommandExecutor {
             },
         };
         let added_user = self.list_the_docs.add_user(&user)?;
-        Ok(to_string(&added_user, self.pretty_print))
+        Ok(to_string(&added_user, self.json_output))
     }
 
     fn get_user(&self, name: String) -> Result<String> {
         match self.list_the_docs.get_user(&name)? {
-            Some(user) => Ok(to_string(&user, self.pretty_print)),
+            Some(user) => Ok(to_string(&user, self.json_output)),
             None => Ok(format!("User with name '{}' not found", name)),
         }
     }
 
     fn get_all_users(&self) -> Result<String> {
         let users = self.list_the_docs.get_all_users()?;
-        Ok(to_string(&users, self.pretty_print))
+        Ok(to_string(&users, self.json_output))
     }
 
     fn add_roles(
@@ -229,7 +229,7 @@ impl CommandExecutor {
 
     fn get_roles(&self, user_name: String) -> Result<String> {
         match self.list_the_docs.get_roles(&user_name)? {
-            Some(roles) => Ok(to_string(&roles, self.pretty_print)),
+            Some(roles) => Ok(to_string(&roles, self.json_output)),
             None => Ok(format!("User with name '{}' not found", user_name)),
         }
     }
@@ -247,14 +247,14 @@ where
         .map_err(|e| Error::InputError(format!("Invalid file content: {}", e)))
 }
 
-fn to_string<T>(t: &T, pretty_print: bool) -> String
+fn to_string<T>(t: &T, json_output: bool) -> String
 where
     T: serde::Serialize + Debug,
 {
-    if pretty_print {
-        format!("{:#?}", t)
-    } else {
+    if json_output {
         serde_json::to_string(&t).unwrap_or_else(|e| panic!("serde serialization failed: {}", e))
+    } else {
+        format!("{:#?}", t)
     }
 }
 
