@@ -68,4 +68,10 @@ pub mod patch {
         pub description: Option<String>,
         pub logo: Option<String>,
     }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct ProjectRole {
+        pub role_name: String,
+        pub project_code: String,
+    }
 }

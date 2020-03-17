@@ -41,7 +41,7 @@ impl ListTheDocs {
                 response.as_str()?
             ))),
             _ => {
-                println!("{:?}", response);
+                println!("{:?}", response.as_str());
                 unimplemented!()
             }
         }
@@ -55,7 +55,7 @@ impl ListTheDocs {
             200 => Ok(Some(response.json()?)),
             404 => Ok(None),
             _ => {
-                println!("{:?}", response);
+                println!("{:?}", response.as_str());
                 unimplemented!()
             }
         }
@@ -68,7 +68,7 @@ impl ListTheDocs {
         match response.status_code {
             200 => Ok(response.json()?),
             _ => {
-                println!("{:?}", response);
+                println!("{:?}", response.as_str());
                 unimplemented!()
             }
         }
@@ -90,7 +90,7 @@ impl ListTheDocs {
             401 => Err(Error::InputError("Authorization failed".to_owned())),
             404 => Ok(None),
             _ => {
-                println!("{:?}", response);
+                println!("{:?}", response.as_str());
                 unimplemented!()
             }
         }
@@ -110,7 +110,7 @@ impl ListTheDocs {
             200 | 404 => Ok(()),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
             _ => {
-                println!("{:?}", response);
+                println!("{:?}", response.as_str());
                 unimplemented!()
             }
         }
@@ -141,7 +141,72 @@ impl ListTheDocs {
                 response.as_str()?
             ))),
             _ => {
-                println!("{:?}", response);
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
+    pub fn get_user(&self, name: &str) -> Result<Option<get::User>> {
+        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
+            "Cannot delete a project if API key is not provided".to_owned(),
+        ))?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/users/", name].concat();
+        let response = minreq::get(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .send()?;
+
+        match response.status_code {
+            200 => Ok(Some(response.json()?)),
+            404 => Ok(None),
+            _ => {
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
+    pub fn get_all_users(&self) -> Result<Vec<get::User>> {
+        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
+            "Cannot delete a project if API key is not provided".to_owned(),
+        ))?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/users"].concat();
+        let response = minreq::get(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .send()?;
+
+        match response.status_code {
+            200 => Ok(response.json()?),
+            _ => {
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
+    pub fn add_roles(
+        &self,
+        user_name: &str,
+        roles: &Vec<patch::ProjectRole>,
+    ) -> Result<Option<()>> {
+        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
+            "Cannot update a project if API key is not provided".to_owned(),
+        ))?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/users/", &user_name, "/roles"].concat();
+        let response = minreq::patch(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .with_json(roles)?
+            .send()?;
+
+        match response.status_code {
+            200 => Ok(Some(())),
+            401 => Err(Error::InputError("Authorization failed".to_owned())),
+            404 => Ok(None),
+            _ => {
+                println!("{:?}", response.as_str());
                 unimplemented!()
             }
         }

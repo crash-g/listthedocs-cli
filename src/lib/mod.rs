@@ -10,7 +10,9 @@ mod entities;
 mod error;
 
 use client::ListTheDocs;
-use command_line::{opt_from_args, Command, ProjectCommand, UserCommand, VersionCommand};
+use command_line::{
+    opt_from_args, Command, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
+};
 use entities::{patch, post};
 pub use error::{Error, Result};
 
@@ -47,6 +49,15 @@ pub fn execute_command() -> Result<String> {
                 is_admin,
                 file_path,
             } => executor.add_user(name, is_admin, file_path),
+            UserCommand::Get { name } => executor.get_user(name),
+            UserCommand::GetAll => executor.get_all_users(),
+        },
+        Command::Role { role_command } => match role_command {
+            RoleCommand::Add {
+                user_name,
+                project_role,
+                file_path,
+            } => executor.add_roles(user_name, project_role, file_path),
         },
     }
 }
@@ -141,6 +152,50 @@ impl CommandExecutor {
         };
         let added_user = self.list_the_docs.add_user(&user)?;
         Ok(to_string(&added_user, self.pretty_print))
+    }
+
+    fn get_user(&self, name: String) -> Result<String> {
+        match self.list_the_docs.get_user(&name)? {
+            Some(user) => Ok(to_string(&user, self.pretty_print)),
+            None => Ok(format!("User with name '{}' not found", name)),
+        }
+    }
+
+    fn get_all_users(&self) -> Result<String> {
+        let users = self.list_the_docs.get_all_users()?;
+        Ok(to_string(&users, self.pretty_print))
+    }
+
+    fn add_roles(
+        &self,
+        user_name: String,
+        project_role: Option<Vec<ProjectRole>>,
+        file_path: Option<PathBuf>,
+    ) -> Result<String> {
+        let roles: Vec<_> = match file_path {
+            Some(path) => from_file(path)?,
+            None => project_role
+                .ok_or(Error::InputError("Missing project roles to add".to_owned()))?
+                .into_iter()
+                .map(
+                    |ProjectRole {
+                         role_name,
+                         project_code,
+                     }| patch::ProjectRole {
+                        role_name,
+                        project_code,
+                    },
+                )
+                .collect(),
+        };
+
+        match self.list_the_docs.add_roles(&user_name, &roles)? {
+            Some(_) => Ok("".to_owned()),
+            None => Err(Error::InputError(format!(
+                "User with name '{}' not found",
+                &user_name
+            ))),
+        }
     }
 }
 

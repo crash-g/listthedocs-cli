@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::str::FromStr;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -41,6 +42,11 @@ pub enum Command {
     User {
         #[structopt(subcommand)]
         user_command: UserCommand,
+    },
+
+    Role {
+        #[structopt(subcommand)]
+        role_command: RoleCommand,
     },
 }
 
@@ -118,6 +124,51 @@ pub enum UserCommand {
         is_admin: Option<bool>,
 
         /// Path to a json file containing the definition of the user to add.
+        /// If given, this takes priority over all other options.
+        #[structopt(parse(from_os_str))]
+        file_path: Option<PathBuf>,
+    },
+
+    Get {
+        /// The name of the user
+        name: String,
+    },
+
+    /// Get the list of all users
+    GetAll,
+}
+
+#[derive(Debug)]
+pub struct ProjectRole {
+    pub role_name: String,
+    pub project_code: String,
+}
+
+impl FromStr for ProjectRole {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.split("/").collect::<Vec<_>>()[..] {
+            [role_name, project_code] => Ok(ProjectRole {
+                role_name: role_name.to_owned(),
+                project_code: project_code.to_owned(),
+            }),
+            _ => Result::Err(format!("Invalid project role: {}", s)),
+        }
+    }
+}
+
+#[derive(Debug, StructOpt)]
+pub enum RoleCommand {
+    Add {
+        /// The name of the user
+        #[structopt(long = "user")]
+        user_name: String,
+
+        /// A list of roles to add
+        #[structopt(long = "pr")]
+        project_role: Option<Vec<ProjectRole>>,
+
+        /// Path to a json file containing the definition of the role to add.
         /// If given, this takes priority over all other options.
         #[structopt(parse(from_os_str))]
         file_path: Option<PathBuf>,
