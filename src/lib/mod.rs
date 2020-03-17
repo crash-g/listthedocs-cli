@@ -58,6 +58,12 @@ pub fn execute_command() -> Result<String> {
                 project_role,
                 file_path,
             } => executor.add_roles(user_name, project_role, file_path),
+            RoleCommand::Remove {
+                user_name,
+                project_role,
+                file_path,
+            } => executor.remove_roles(user_name, project_role, file_path),
+            RoleCommand::Get { user_name } => executor.get_roles(user_name),
         },
     }
 }
@@ -187,6 +193,44 @@ impl CommandExecutor {
                 "User with name '{}' not found",
                 &user_name
             ))),
+        }
+    }
+
+    fn remove_roles(
+        &self,
+        user_name: String,
+        project_role: Vec<ProjectRole>,
+        file_path: Option<PathBuf>,
+    ) -> Result<String> {
+        let roles: Vec<_> = match file_path {
+            Some(path) => from_file(path)?,
+            None => project_role
+                .into_iter()
+                .map(
+                    |ProjectRole {
+                         role_name,
+                         project_code,
+                     }| patch::ProjectRole {
+                        role_name,
+                        project_code,
+                    },
+                )
+                .collect(),
+        };
+
+        match self.list_the_docs.remove_roles(&user_name, &roles)? {
+            Some(_) => Ok("".to_owned()),
+            None => Err(Error::InputError(format!(
+                "User with name '{}' not found",
+                &user_name
+            ))),
+        }
+    }
+
+    fn get_roles(&self, user_name: String) -> Result<String> {
+        match self.list_the_docs.get_roles(&user_name)? {
+            Some(roles) => Ok(to_string(&roles, self.pretty_print)),
+            None => Ok(format!("User with name '{}' not found", user_name)),
         }
     }
 }

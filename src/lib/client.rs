@@ -18,7 +18,7 @@ impl ListTheDocs {
 
     pub fn add_project(&self, project: &post::Project) -> Result<get::Project> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot add a project if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/projects"].concat();
@@ -80,7 +80,7 @@ impl ListTheDocs {
         project: &patch::Project,
     ) -> Result<Option<get::Project>> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot update a project if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/projects/", code].concat();
@@ -102,7 +102,7 @@ impl ListTheDocs {
 
     pub fn remove_project(&self, code: &str) -> Result<()> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot delete a project if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/projects/", code].concat();
@@ -122,7 +122,7 @@ impl ListTheDocs {
 
     pub fn add_user(&self, user: &post::User) -> Result<get::User> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot add a user if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/users"].concat();
@@ -153,7 +153,7 @@ impl ListTheDocs {
 
     pub fn get_user(&self, name: &str) -> Result<Option<get::User>> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot delete a project if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/users/", name].concat();
@@ -173,7 +173,7 @@ impl ListTheDocs {
 
     pub fn get_all_users(&self) -> Result<Vec<get::User>> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot delete a project if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/users"].concat();
@@ -196,11 +196,57 @@ impl ListTheDocs {
         roles: &Vec<patch::ProjectRole>,
     ) -> Result<Option<()>> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "Cannot update a project if API key is not provided".to_owned(),
+            "API key is required and was not provided".to_owned(),
         ))?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/users/", &user_name, "/roles"].concat();
         let response = minreq::patch(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .with_json(roles)?
+            .send()?;
+
+        match response.status_code {
+            200 => Ok(Some(())),
+            401 => Err(Error::InputError("Authorization failed".to_owned())),
+            404 => Ok(None),
+            _ => {
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
+    pub fn get_roles(&self, user_name: &str) -> Result<Option<Vec<get::Role>>> {
+        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
+            "API key is required and was not provided".to_owned(),
+        ))?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/users/", user_name, "/roles"].concat();
+        let response = minreq::get(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .send()?;
+
+        match response.status_code {
+            200 => Ok(Some(response.json()?)),
+            404 => Ok(None),
+            _ => {
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
+    pub fn remove_roles(
+        &self,
+        user_name: &str,
+        roles: &Vec<patch::ProjectRole>,
+    ) -> Result<Option<()>> {
+        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
+            "API key is required and was not provided".to_owned(),
+        ))?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/users/", &user_name, "/roles"].concat();
+        let response = minreq::delete(endpoint_url)
             .with_header("Api-Key", api_key)
             .with_json(roles)?
             .send()?;

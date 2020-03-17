@@ -133,6 +133,40 @@ pub enum UserCommand {
     GetAll,
 }
 
+#[derive(Debug, StructOpt)]
+pub enum RoleCommand {
+    Add {
+        /// The name of the user
+        user_name: String,
+
+        /// A list of roles to add
+        project_role: Vec<ProjectRole>,
+
+        /// Path to a json file containing the definition of the roles to add.
+        /// If given, no arguments must be passed.
+        #[structopt(short, parse(from_os_str))]
+        file_path: Option<PathBuf>,
+    },
+
+    Remove {
+        /// The name of the user
+        user_name: String,
+
+        /// A list of roles to remove
+        project_role: Vec<ProjectRole>,
+
+        /// Path to a json file containing the definition of the roles to remove.
+        /// If given, no arguments must be passed.
+        #[structopt(short, parse(from_os_str))]
+        file_path: Option<PathBuf>,
+    },
+
+    Get {
+        /// The name of the user
+        user_name: String,
+    },
+}
+
 #[derive(Debug)]
 pub struct ProjectRole {
     pub role_name: String,
@@ -150,22 +184,6 @@ impl FromStr for ProjectRole {
             _ => Result::Err(format!("Invalid project role: {}", s)),
         }
     }
-}
-
-#[derive(Debug, StructOpt)]
-pub enum RoleCommand {
-    Add {
-        /// The name of the user
-        user_name: String,
-
-        /// A list of roles to add
-        project_role: Vec<ProjectRole>,
-
-        /// Path to a json file containing the definition of the role to add.
-        /// If given, no arguments must be passed.
-        #[structopt(short, parse(from_os_str))]
-        file_path: Option<PathBuf>,
-    },
 }
 
 pub fn opt_from_args() -> Opt {
