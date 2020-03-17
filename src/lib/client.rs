@@ -120,6 +120,38 @@ impl ListTheDocs {
         }
     }
 
+    pub fn add_version(&self, code: &str, version: &post::Version) -> Result<Option<get::Project>> {
+        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
+            "API key is required and was not provided".to_owned(),
+        ))?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/projects/", code, "/versions"].concat();
+        let response = minreq::post(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .with_json(version)?
+            .send()?;
+
+        match response.status_code {
+            201 => Ok(Some(response.json()?)),
+            400 => Err(Error::InputError(format!(
+                "Bad request: {:?} -- Response: {}",
+                version,
+                response.as_str()?
+            ))),
+            401 => Err(Error::InputError("Authorization failed".to_owned())),
+            404 => Ok(None),
+            409 => Err(Error::InputError(format!(
+                "Conflict: {:?} -- Response: {}",
+                version,
+                response.as_str()?
+            ))),
+            _ => {
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
     pub fn add_user(&self, user: &post::User) -> Result<get::User> {
         let api_key = self.api_key.as_ref().ok_or(Error::InputError(
             "API key is required and was not provided".to_owned(),

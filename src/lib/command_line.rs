@@ -13,7 +13,7 @@ pub struct Opt {
     pub api_key: Option<String>,
 
     /// Path to a json file containing the URL and, optionally, the API key.
-    /// If given, this takes priority over the other options.
+    /// If given, other options are not taken into account.
     #[structopt(short, long, parse(from_os_str))]
     pub config: Option<PathBuf>,
 
@@ -62,7 +62,7 @@ pub enum ProjectCommand {
         logo: Option<String>,
 
         /// Path to a json file containing the definition of the project to add.
-        /// If given, no arguments must be passed.
+        /// If given, arguments are not taken into account.
         #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
@@ -90,7 +90,7 @@ pub enum ProjectCommand {
         logo: Option<String>,
 
         /// Path to a json file containing the definition of the project to update.
-        /// If given, no arguments must be passed.
+        /// If given, arguments are not taken into account.
         #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
@@ -104,7 +104,21 @@ pub enum ProjectCommand {
 
 #[derive(Debug, StructOpt)]
 pub enum VersionCommand {
-    Todo {},
+    Add {
+        /// The code of the project, as returned upon insertion
+        code: String,
+
+        /// The version to add (e.g., 1.0.0)
+        version: Option<String>,
+
+        /// The URL to the documentation files
+        url: Option<String>,
+
+        /// Path to a json file containing the version and URL to add.
+        /// If given, arguments are not taken into account.
+        #[structopt(short, parse(from_os_str))]
+        file_path: Option<PathBuf>,
+    },
 }
 
 #[derive(Debug, StructOpt)]
@@ -117,7 +131,7 @@ pub enum UserCommand {
         is_admin: Option<bool>,
 
         /// Path to a json file containing the definition of the user to add.
-        /// If given, no arguments must be passed.
+        /// If given, arguments are not taken into account.
         #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
@@ -141,7 +155,7 @@ pub enum RoleCommand {
         project_role: Vec<ProjectRole>,
 
         /// Path to a json file containing the definition of the roles to add.
-        /// If given, no arguments must be passed.
+        /// If given, arguments are not taken into account.
         #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
@@ -154,7 +168,7 @@ pub enum RoleCommand {
         project_role: Vec<ProjectRole>,
 
         /// Path to a json file containing the definition of the roles to remove.
-        /// If given, no arguments must be passed.
+        /// If given, arguments are not taken into account.
         #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },

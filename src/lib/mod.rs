@@ -42,7 +42,14 @@ pub fn execute_command() -> Result<String> {
             } => executor.update_project(code, description, logo, file_path),
             ProjectCommand::Remove { code } => executor.remove_project(code),
         },
-        Command::Version { version_command } => unimplemented!(),
+        Command::Version { version_command } => match version_command {
+            VersionCommand::Add {
+                code,
+                version,
+                url,
+                file_path,
+            } => executor.add_version(code, version, url, file_path),
+        },
         Command::User { user_command } => match user_command {
             UserCommand::Add {
                 name,
@@ -132,6 +139,34 @@ impl CommandExecutor {
 
     fn remove_project(&self, code: String) -> Result<String> {
         self.list_the_docs.remove_project(&code).map(|_| code)
+    }
+
+    fn add_version(
+        &self,
+        code: String,
+        version: Option<String>,
+        url: Option<String>,
+        file_path: Option<PathBuf>,
+    ) -> Result<String> {
+        let version = match file_path {
+            Some(path) => from_file(path)?,
+            None => post::Version {
+                name: version.ok_or(Error::InputError(
+                    "Missing compulsory 'version' field".to_owned(),
+                ))?,
+                url: url.ok_or(Error::InputError(
+                    "Missing compulsory 'url' field".to_owned(),
+                ))?,
+            },
+        };
+
+        match self.list_the_docs.add_version(&code, &version)? {
+            Some(project) => Ok(to_string(&project, self.json_output)),
+            None => Err(Error::InputError(format!(
+                "Project with code '{}' not found",
+                &code
+            ))),
+        }
     }
 
     fn add_user(

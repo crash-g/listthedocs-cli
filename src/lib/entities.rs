@@ -52,6 +52,12 @@ pub mod post {
     }
 
     #[derive(Debug, Serialize, Deserialize)]
+    pub struct Version {
+        pub name: String,
+        pub url: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct User {
         pub name: String,
         pub is_admin: Option<bool>,
