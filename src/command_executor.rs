@@ -4,19 +4,12 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-mod client;
-mod command_line;
-mod entities;
-mod error;
-
-pub use command_line::options_from_args;
-pub use error::{Error, Result};
-
-use client::ListTheDocs;
-use command_line::{
+use super::client::ListTheDocs;
+use super::command_line::{
     Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
 };
-use entities::{get, patch, post};
+use super::entities::{get, patch, post};
+use super::error::{Error, Result};
 
 pub fn execute_command(opt: Opt) -> Result<String> {
     let list_the_docs = make_client(opt.url.clone(), opt.api_key.clone(), &opt.config)?;
@@ -347,16 +340,3 @@ where
         )),
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-
-//     #[test]
-//     fn test_project_command() {
-//         let code = "test".to_owned();
-//         let list_the_docs = ListTheDocs::new("http://localhost:5000", Some("ROOT-API-KEY"));
-//         remove_project(&list_the_docs, code).unwrap();
-//         todo!()
-//     }
-// }

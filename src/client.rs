@@ -61,6 +61,7 @@ impl ListTheDocs {
     where
         R: serde::de::DeserializeOwned,
     {
+        let endpoint_url = &[&self.base_url, endpoint_url].concat();
         let response = if with_api_key {
             let api_key = self.api_key.as_ref().ok_or_else(|| {
                 Error::InputError("API key is required and was not provided".to_owned())
