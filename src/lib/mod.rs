@@ -13,7 +13,7 @@ use client::ListTheDocs;
 use command_line::{
     opt_from_args, Command, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
 };
-use entities::{patch, post};
+use entities::{get, patch, post};
 pub use error::{Error, Result};
 
 pub fn execute_command() -> Result<String> {
@@ -100,19 +100,27 @@ impl CommandExecutor {
                 logo,
             },
         };
-        let added_project = self.list_the_docs.add_project(&project)?;
+        let added_project: get::Project = self
+            .list_the_docs
+            .post("/api/v2/projects", &project)?
+            .expect("404 can never be received when adding a project");
         Ok(to_string(&added_project, self.json_output))
     }
 
     fn get_project(&self, code: String) -> Result<String> {
-        match self.list_the_docs.get_project(&code)? {
+        let endpoint_url = &["/api/v2/projects/", &code].concat();
+        let project: Option<get::Project> = self.list_the_docs.get(endpoint_url, false)?;
+        match project {
             Some(project) => Ok(to_string(&project, self.json_output)),
             None => Ok(format!("Project with code '{}' not found", code)),
         }
     }
 
     fn get_all_projects(&self) -> Result<String> {
-        let projects = self.list_the_docs.get_all_projects()?;
+        let projects: Vec<get::Project> = self
+            .list_the_docs
+            .get("/api/v2/projects", false)?
+            .expect("404 can never be received when getting all projects");
         Ok(to_string(&projects, self.json_output))
     }
 
@@ -128,7 +136,9 @@ impl CommandExecutor {
             None => patch::Project { description, logo },
         };
 
-        match self.list_the_docs.update_project(&code, &project)? {
+        let endpoint_url = &["/api/v2/projects/", &code].concat();
+        let project: Option<get::Project> = self.list_the_docs.patch(&endpoint_url, &project)?;
+        match project {
             Some(project) => Ok(to_string(&project, self.json_output)),
             None => Err(Error::InputError(format!(
                 "Project with code '{}' not found",
@@ -160,7 +170,9 @@ impl CommandExecutor {
             },
         };
 
-        match self.list_the_docs.add_version(&code, &version)? {
+        let endpoint_url = &["/api/v2/projects/", &code, "/versions"].concat();
+        let project: Option<get::Project> = self.list_the_docs.post(&endpoint_url, &version)?;
+        match project {
             Some(project) => Ok(to_string(&project, self.json_output)),
             None => Err(Error::InputError(format!(
                 "Project with code '{}' not found",
@@ -184,19 +196,27 @@ impl CommandExecutor {
                 is_admin,
             },
         };
-        let added_user = self.list_the_docs.add_user(&user)?;
+        let added_user: get::User = self
+            .list_the_docs
+            .post("/api/v2/users", &user)?
+            .expect("404 can never be received when adding a user");
         Ok(to_string(&added_user, self.json_output))
     }
 
     fn get_user(&self, name: String) -> Result<String> {
-        match self.list_the_docs.get_user(&name)? {
+        let endpoint_url = &["/api/v2/users/", &name].concat();
+        let user: Option<get::User> = self.list_the_docs.get(&endpoint_url, true)?;
+        match user {
             Some(user) => Ok(to_string(&user, self.json_output)),
             None => Ok(format!("User with name '{}' not found", name)),
         }
     }
 
     fn get_all_users(&self) -> Result<String> {
-        let users = self.list_the_docs.get_all_users()?;
+        let users: Vec<get::User> = self
+            .list_the_docs
+            .get("/api/v2/users", true)?
+            .expect("404 can never be received when getting all users");
         Ok(to_string(&users, self.json_output))
     }
 
@@ -222,7 +242,11 @@ impl CommandExecutor {
                 .collect(),
         };
 
-        match self.list_the_docs.add_roles(&user_name, &roles)? {
+        let endpoint_url = &["/api/v2/users/", &user_name, "/roles"].concat();
+        let roles: Option<()> = self
+            .list_the_docs
+            .patch_without_response(&endpoint_url, &roles)?;
+        match roles {
             Some(_) => Ok("".to_owned()),
             None => Err(Error::InputError(format!(
                 "User with name '{}' not found",
@@ -263,12 +287,16 @@ impl CommandExecutor {
     }
 
     fn get_roles(&self, user_name: String) -> Result<String> {
-        match self.list_the_docs.get_roles(&user_name)? {
+        let endpoint_url = &["/api/v2/users/", &user_name, "/roles"].concat();
+        let roles: Option<Vec<get::Role>> = self.list_the_docs.get(&endpoint_url, true)?;
+        match roles {
             Some(roles) => Ok(to_string(&roles, self.json_output)),
             None => Ok(format!("User with name '{}' not found", user_name)),
         }
     }
 }
+
+//// Utility functions /////
 
 fn from_file<P, R>(path: P) -> Result<R>
 where
