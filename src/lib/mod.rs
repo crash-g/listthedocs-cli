@@ -9,18 +9,19 @@ mod command_line;
 mod entities;
 mod error;
 
-use client::ListTheDocs;
-use command_line::{
-    opt_from_args, Command, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
-};
-use entities::{get, patch, post};
+pub use command_line::options_from_args;
 pub use error::{Error, Result};
 
-pub fn execute_command() -> Result<String> {
-    let opt = opt_from_args();
+use client::ListTheDocs;
+use command_line::{
+    Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
+};
+use entities::{get, patch, post};
+
+pub fn execute_command(opt: Opt) -> Result<String> {
     let list_the_docs = make_client(opt.url.clone(), opt.api_key.clone(), &opt.config)?;
     let executor = CommandExecutor {
-        list_the_docs: list_the_docs,
+        list_the_docs,
         json_output: opt.json,
     };
 
@@ -91,12 +92,12 @@ impl CommandExecutor {
         let project = match file_path {
             Some(path) => from_file(path)?,
             None => post::Project {
-                title: title.ok_or(Error::InputError(
-                    "Missing compulsory 'title' field".to_owned(),
-                ))?,
-                description: description.ok_or(Error::InputError(
-                    "Missing compulsory 'description' field".to_owned(),
-                ))?,
+                title: title.ok_or_else(|| {
+                    Error::InputError("Missing compulsory 'title' field".to_owned())
+                })?,
+                description: description.ok_or_else(|| {
+                    Error::InputError("Missing compulsory 'description' field".to_owned())
+                })?,
                 logo,
             },
         };
@@ -161,12 +162,12 @@ impl CommandExecutor {
         let version = match file_path {
             Some(path) => from_file(path)?,
             None => post::Version {
-                name: version.ok_or(Error::InputError(
-                    "Missing compulsory 'version' field".to_owned(),
-                ))?,
-                url: url.ok_or(Error::InputError(
-                    "Missing compulsory 'url' field".to_owned(),
-                ))?,
+                name: version.ok_or_else(|| {
+                    Error::InputError("Missing compulsory 'version' field".to_owned())
+                })?,
+                url: url.ok_or_else(|| {
+                    Error::InputError("Missing compulsory 'url' field".to_owned())
+                })?,
             },
         };
 
@@ -190,9 +191,9 @@ impl CommandExecutor {
         let user = match file_path {
             Some(path) => from_file(path)?,
             None => post::User {
-                name: name.ok_or(Error::InputError(
-                    "Missing compulsory 'name' field".to_owned(),
-                ))?,
+                name: name.ok_or_else(|| {
+                    Error::InputError("Missing compulsory 'name' field".to_owned())
+                })?,
                 is_admin,
             },
         };
@@ -341,9 +342,7 @@ where
             Ok(ListTheDocs::new(config.url, config.api_key))
         }
         None => Ok(ListTheDocs::new(
-            url.ok_or(Error::InputError(
-                "Missing compulsory url parameter".to_owned(),
-            ))?,
+            url.ok_or_else(|| Error::InputError("Missing compulsory url parameter".to_owned()))?,
             api_key,
         )),
     }

@@ -21,9 +21,9 @@ impl ListTheDocs {
         B: serde::ser::Serialize + std::fmt::Debug,
         R: serde::de::DeserializeOwned,
     {
-        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "API key is required and was not provided".to_owned(),
-        ))?;
+        let api_key = self.api_key.as_ref().ok_or_else(|| {
+            Error::InputError("API key is required and was not provided".to_owned())
+        })?;
 
         let endpoint_url = &[&self.base_url, endpoint_url].concat();
         let response = minreq::post(endpoint_url)
@@ -62,9 +62,9 @@ impl ListTheDocs {
         R: serde::de::DeserializeOwned,
     {
         let response = if with_api_key {
-            let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-                "API key is required and was not provided".to_owned(),
-            ))?;
+            let api_key = self.api_key.as_ref().ok_or_else(|| {
+                Error::InputError("API key is required and was not provided".to_owned())
+            })?;
             minreq::get(endpoint_url)
                 .with_header("Api-Key", api_key)
                 .send()?
@@ -92,9 +92,9 @@ impl ListTheDocs {
         B: serde::ser::Serialize + std::fmt::Debug,
         R: serde::de::DeserializeOwned,
     {
-        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "API key is required and was not provided".to_owned(),
-        ))?;
+        let api_key = self.api_key.as_ref().ok_or_else(|| {
+            Error::InputError("API key is required and was not provided".to_owned())
+        })?;
 
         let endpoint_url = &[&self.base_url, endpoint_url].concat();
         let response = minreq::patch(endpoint_url)
@@ -133,9 +133,9 @@ impl ListTheDocs {
     where
         B: serde::ser::Serialize + std::fmt::Debug,
     {
-        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "API key is required and was not provided".to_owned(),
-        ))?;
+        let api_key = self.api_key.as_ref().ok_or_else(|| {
+            Error::InputError("API key is required and was not provided".to_owned())
+        })?;
 
         let endpoint_url = &[&self.base_url, endpoint_url].concat();
         let response = minreq::patch(endpoint_url)
@@ -173,9 +173,9 @@ impl ListTheDocs {
     ////// just keep them both.                                               ////////
 
     pub fn remove_project(&self, code: &str) -> Result<()> {
-        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "API key is required and was not provided".to_owned(),
-        ))?;
+        let api_key = self.api_key.as_ref().ok_or_else(|| {
+            Error::InputError("API key is required and was not provided".to_owned())
+        })?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/projects/", code].concat();
         let response = minreq::delete(endpoint_url)
@@ -199,16 +199,16 @@ impl ListTheDocs {
     pub fn remove_roles(
         &self,
         user_name: &str,
-        roles: &Vec<patch::ProjectRole>,
+        roles: &[patch::ProjectRole],
     ) -> Result<Option<()>> {
-        let api_key = self.api_key.as_ref().ok_or(Error::InputError(
-            "API key is required and was not provided".to_owned(),
-        ))?;
+        let api_key = self.api_key.as_ref().ok_or_else(|| {
+            Error::InputError("API key is required and was not provided".to_owned())
+        })?;
 
         let endpoint_url = &[&self.base_url, "/api/v2/users/", &user_name, "/roles"].concat();
         let response = minreq::delete(endpoint_url)
             .with_header("Api-Key", api_key)
-            .with_json(roles)?
+            .with_json(&roles)?
             .send()?;
 
         match response.status_code {

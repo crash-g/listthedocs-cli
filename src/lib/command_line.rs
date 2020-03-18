@@ -188,7 +188,7 @@ pub struct ProjectRole {
 impl FromStr for ProjectRole {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.split("/").collect::<Vec<_>>()[..] {
+        match s.split('/').collect::<Vec<_>>()[..] {
             [role_name, project_code] => Ok(ProjectRole {
                 role_name: role_name.to_owned(),
                 project_code: project_code.to_owned(),
@@ -198,6 +198,6 @@ impl FromStr for ProjectRole {
     }
 }
 
-pub fn opt_from_args() -> Opt {
+pub fn options_from_args() -> Opt {
     Opt::from_args()
 }
