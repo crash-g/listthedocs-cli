@@ -119,6 +119,25 @@ pub enum VersionCommand {
         #[structopt(short, parse(from_os_str))]
         file_path: Option<PathBuf>,
     },
+
+    Update {
+        /// The code of the project, as returned upon insertion
+        code: String,
+
+        /// The version to update (e.g., 1.0.0)
+        version: String,
+
+        /// The updated URL to the documentation files
+        url: String,
+    },
+
+    Remove {
+        /// The code of the project, as returned upon insertion
+        code: String,
+
+        /// The version to remove (e.g., 1.0.0)
+        version: String,
+    },
 }
 
 #[derive(Debug, StructOpt)]

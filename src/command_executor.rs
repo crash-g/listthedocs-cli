@@ -43,6 +43,10 @@ pub fn execute_command(opt: Opt) -> Result<String> {
                 url,
                 file_path,
             } => executor.add_version(code, version, url, file_path),
+            VersionCommand::Update { code, version, url } => {
+                executor.update_version(code, version, url)
+            }
+            VersionCommand::Remove { code, version } => executor.remove_version(code, version),
         },
         Command::User { user_command } => match user_command {
             UserCommand::Add {
@@ -142,7 +146,8 @@ impl CommandExecutor {
     }
 
     fn remove_project(&self, code: String) -> Result<String> {
-        self.list_the_docs.remove_project(&code).map(|_| code)
+        let endpoint_url = &["/api/v2/projects/", &code].concat();
+        self.list_the_docs.remove(&endpoint_url).map(|_| code)
     }
 
     fn add_version(
@@ -173,6 +178,24 @@ impl CommandExecutor {
                 &code
             ))),
         }
+    }
+
+    fn update_version(&self, code: String, version: String, url: String) -> Result<String> {
+        let url = patch::Version { url };
+        let endpoint_url = &["/api/v2/projects/", &code, "/versions/", &version].concat();
+        let project: Option<get::Project> = self.list_the_docs.patch(&endpoint_url, &url)?;
+        match project {
+            Some(project) => Ok(to_string(&project, self.json_output)),
+            None => Err(Error::InputError(format!(
+                "Project with code '{}' or version '{}' not found",
+                &code, &version
+            ))),
+        }
+    }
+
+    fn remove_version(&self, code: String, version: String) -> Result<String> {
+        let endpoint_url = &["/api/v2/projects/", &code, "/versions/", &version].concat();
+        self.list_the_docs.remove(&endpoint_url).map(|_| version)
     }
 
     fn add_user(

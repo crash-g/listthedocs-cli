@@ -73,6 +73,11 @@ pub mod patch {
         pub logo: Option<String>,
     }
 
+    #[derive(Debug, Serialize)]
+    pub struct Version {
+        pub url: String,
+    }
+
     #[derive(Debug, Serialize, Deserialize)]
     pub struct ProjectRole {
         pub role_name: String,

@@ -170,15 +170,12 @@ impl ListTheDocs {
         }
     }
 
-    ////// These methods both use delete but in different ways, so for now we ////////
-    ////// just keep them both.                                               ////////
-
-    pub fn remove_project(&self, code: &str) -> Result<()> {
+    pub fn remove(&self, endpoint_url: &str) -> Result<()> {
         let api_key = self.api_key.as_ref().ok_or_else(|| {
             Error::InputError("API key is required and was not provided".to_owned())
         })?;
 
-        let endpoint_url = &[&self.base_url, "/api/v2/projects/", code].concat();
+        let endpoint_url = &[&self.base_url, endpoint_url].concat();
         let response = minreq::delete(endpoint_url)
             .with_header("Api-Key", api_key)
             .send()?;
