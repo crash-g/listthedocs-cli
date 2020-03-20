@@ -29,6 +29,7 @@ fn find_exe() -> PathBuf {
 }
 
 #[test]
+#[ignore]
 fn add_update_delete_project() -> Result<(), serde_json::Error> {
     let project_title = "test-project";
 
@@ -119,6 +120,7 @@ fn add_update_delete_project() -> Result<(), serde_json::Error> {
 }
 
 #[test]
+#[ignore]
 fn add_update_delete_version() -> Result<(), serde_json::Error> {
     let project_title = "test-version";
     let version_name = "1.0.0";
