@@ -5,9 +5,8 @@ authors = ["crash-g <g.muciaccia@camlintechnologies.com>"]
 edition = "2018"
 
 [dependencies]
-serde = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_derive = "1.0"
 minreq = { version = "2.1", features = ["json-using-serde"] }
 structopt = "0.3"
 

@@ -1,4 +1,4 @@
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use std::fmt::Debug;
 use std::fs::File;
 use std::io::BufReader;
