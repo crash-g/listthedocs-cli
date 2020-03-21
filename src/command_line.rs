@@ -162,6 +162,11 @@ pub enum UserCommand {
 
     /// Get the list of all users
     GetAll,
+
+    Remove {
+        /// The name of the user
+        name: String,
+    },
 }
 
 #[derive(Debug, StructOpt)]

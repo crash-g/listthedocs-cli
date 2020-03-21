@@ -8,29 +8,9 @@ use std::process;
 const URL: &str = "http://localhost:5000";
 const API_KEY: &str = "ROOT-API-KEY";
 
-/// Find the *listthedocs* executable.
-fn find_exe() -> PathBuf {
-    // Tests exe is in target/debug/deps, the *listthedocs* exe is in target/debug
-    let root = env::current_exe()
-        .expect("tests executable")
-        .parent()
-        .expect("tests executable directory")
-        .parent()
-        .expect("listthedocs executable directory")
-        .to_path_buf();
-
-    let exe_name = if cfg!(windows) {
-        "listthedocs.exe"
-    } else {
-        "listthedocs"
-    };
-
-    root.join(exe_name)
-}
-
 #[test]
 #[ignore]
-fn add_update_delete_project() -> Result<(), serde_json::Error> {
+fn add_update_remove_project() -> Result<(), serde_json::Error> {
     let project_title = "test-project";
 
     let project = Project {
@@ -121,7 +101,7 @@ fn add_update_delete_project() -> Result<(), serde_json::Error> {
 
 #[test]
 #[ignore]
-fn add_update_delete_version() -> Result<(), serde_json::Error> {
+fn add_update_remove_version() -> Result<(), serde_json::Error> {
     let project_title = "test-version";
     let version_name = "1.0.0";
     let version_url = "http://example.com";
@@ -220,4 +200,95 @@ fn add_update_delete_version() -> Result<(), serde_json::Error> {
     );
 
     Ok(())
+}
+
+#[test]
+#[ignore]
+fn add_get_remove_user() -> Result<(), serde_json::Error> {
+    let user_name = "test-user";
+    let is_admin = false;
+
+    let mut user = User {
+        name: user_name.to_owned(),
+        is_admin,
+        created_at: "garbage".to_owned(), // to complete
+        api_keys: vec![],                 // to complete
+        roles: vec![],
+    };
+
+    let exe = find_exe();
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j",
+        "-u",
+        URL,
+        "-a",
+        API_KEY,
+        "user",
+        "remove",
+        user_name,
+    ]);
+    let _ = cmd.output().expect("listthedocs output");
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j",
+        "-u",
+        URL,
+        "-a",
+        API_KEY,
+        "user",
+        "add",
+        user_name,
+        if is_admin { "true" } else { "false" },
+    ]);
+    let output = cmd.output().expect("listthedocs output");
+    let result: User = serde_json::from_str(&String::from_utf8_lossy(&output.stdout))?;
+    user.created_at = result.created_at.clone();
+    user.api_keys.push(ApiKey {
+        created_at: result.api_keys[0].created_at.clone(),
+        is_valid: true,
+        key: result.api_keys[0].key.clone(),
+    });
+    assert_eq!(result, user);
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j",
+        "-u",
+        URL,
+        "-a",
+        API_KEY,
+        "user",
+        "remove",
+        user_name,
+    ]);
+    let output = cmd.output().expect("listthedocs output");
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout).trim(),
+        user_name
+    );
+
+    Ok(())
+}
+
+/// Find the *listthedocs* executable.
+fn find_exe() -> PathBuf {
+    // Tests exe is in target/debug/deps, the *listthedocs* exe is in target/debug
+    let root = env::current_exe()
+        .expect("tests executable")
+        .parent()
+        .expect("tests executable directory")
+        .parent()
+        .expect("listthedocs executable directory")
+        .to_path_buf();
+
+    let exe_name = if cfg!(windows) {
+        "listthedocs.exe"
+    } else {
+        "listthedocs"
+    };
+
+    root.join(exe_name)
 }

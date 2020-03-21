@@ -56,6 +56,7 @@ pub fn execute_command(opt: Opt) -> Result<String> {
             } => executor.add_user(name, is_admin, file_path),
             UserCommand::Get { name } => executor.get_user(name),
             UserCommand::GetAll => executor.get_all_users(),
+            UserCommand::Remove { name } => executor.remove_user(name),
         },
         Command::Role { role_command } => match role_command {
             RoleCommand::Add {
@@ -235,6 +236,11 @@ impl CommandExecutor {
             .get("/api/v2/users", true)?
             .expect("404 can never be received when getting all users");
         Ok(to_string(&users, self.json_output))
+    }
+
+    fn remove_user(&self, name: String) -> Result<String> {
+        let endpoint_url = &["/api/v2/users/", &name].concat();
+        self.list_the_docs.remove(&endpoint_url).map(|_| name)
     }
 
     fn add_roles(
