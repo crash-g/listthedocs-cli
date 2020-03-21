@@ -11,7 +11,7 @@ minreq = { version = "2.1", features = ["json-using-serde"] }
 structopt = "0.3"
 
 [lib]
-name = "listthedocs_lib"
+name = "listthedocs"
 path = "src/lib.rs"
 
 [[bin]]

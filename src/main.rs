@@ -1,4 +1,4 @@
-use listthedocs_lib::{execute_command, options_from_args, Result};
+use listthedocs::{execute_command, options_from_args, Result};
 
 fn main() -> Result<()> {
     let command_line_options = options_from_args();
