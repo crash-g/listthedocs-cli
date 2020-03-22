@@ -34,7 +34,7 @@ pub fn execute_command(opt: Opt) -> Result<String> {
                 file_path,
             } => executor.add_project(title, description, logo, file_path),
             ProjectCommand::Get { code } => executor.get_project(code),
-            ProjectCommand::GetAll => executor.get_all_projects(),
+            ProjectCommand::List => executor.get_all_projects(),
             ProjectCommand::Update {
                 code,
                 description,
@@ -62,7 +62,7 @@ pub fn execute_command(opt: Opt) -> Result<String> {
                 file_path,
             } => executor.add_user(name, is_admin, file_path),
             UserCommand::Get { name } => executor.get_user(name),
-            UserCommand::GetAll => executor.get_all_users(),
+            UserCommand::List => executor.get_all_users(),
             UserCommand::Remove { name } => executor.remove_user(name),
         },
         Command::Role { role_command } => match role_command {

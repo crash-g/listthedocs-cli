@@ -74,7 +74,7 @@ pub enum ProjectCommand {
     },
 
     /// Get the list of all projects
-    GetAll,
+    List,
 
     /// Update an existing project
     Update {
@@ -161,7 +161,7 @@ pub enum UserCommand {
     },
 
     /// Get the list of all users
-    GetAll,
+    List,
 
     Remove {
         /// The name of the user
