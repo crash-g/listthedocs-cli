@@ -4,12 +4,19 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-use super::client::ListTheDocs;
-use super::command_line::{
+mod client;
+mod command_line;
+mod entities;
+mod error;
+
+pub use command_line::options_from_args;
+pub use error::{Error, Result};
+
+use client::ListTheDocs;
+use command_line::{
     Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
 };
-use super::entities::{get, patch, post};
-use super::error::{Error, Result};
+use entities::{get, patch, post};
 
 pub fn execute_command(opt: Opt) -> Result<String> {
     let list_the_docs = make_client(opt.url.clone(), opt.api_key.clone(), &opt.config)?;
@@ -74,7 +81,7 @@ pub fn execute_command(opt: Opt) -> Result<String> {
     }
 }
 
-pub struct CommandExecutor {
+struct CommandExecutor {
     list_the_docs: ListTheDocs,
     json_output: bool,
 }

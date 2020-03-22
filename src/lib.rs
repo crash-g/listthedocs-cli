@@ -1,9 +1,3 @@
-mod client;
-mod command_executor;
-mod command_line;
-mod entities;
-mod error;
+mod cli;
 
-pub use command_executor::execute_command;
-pub use command_line::options_from_args;
-pub use error::{Error, Result};
+pub use cli::{execute_command, options_from_args, Error};
