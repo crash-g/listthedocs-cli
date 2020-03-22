@@ -148,7 +148,9 @@ impl CommandExecutor {
 
     fn remove_project(&self, code: String) -> Result<String> {
         let endpoint_url = &["/api/v2/projects/", &code].concat();
-        self.list_the_docs.remove(&endpoint_url).map(|_| code)
+        self.list_the_docs
+            .remove(&endpoint_url, false)
+            .map(|_| code)
     }
 
     fn add_version(
@@ -196,7 +198,9 @@ impl CommandExecutor {
 
     fn remove_version(&self, code: String, version: String) -> Result<String> {
         let endpoint_url = &["/api/v2/projects/", &code, "/versions/", &version].concat();
-        self.list_the_docs.remove(&endpoint_url).map(|_| version)
+        self.list_the_docs
+            .remove(&endpoint_url, true)
+            .map(|_| version)
     }
 
     fn add_user(
@@ -240,7 +244,9 @@ impl CommandExecutor {
 
     fn remove_user(&self, name: String) -> Result<String> {
         let endpoint_url = &["/api/v2/users/", &name].concat();
-        self.list_the_docs.remove(&endpoint_url).map(|_| name)
+        self.list_the_docs
+            .remove(&endpoint_url, false)
+            .map(|_| name)
     }
 
     fn add_roles(
@@ -265,17 +271,8 @@ impl CommandExecutor {
                 .collect(),
         };
 
-        let endpoint_url = &["/api/v2/users/", &user_name, "/roles"].concat();
-        let roles: Option<()> = self
-            .list_the_docs
-            .patch_without_response(&endpoint_url, &roles)?;
-        match roles {
-            Some(_) => Ok("".to_owned()),
-            None => Err(Error::InputError(format!(
-                "User with name '{}' not found",
-                &user_name
-            ))),
-        }
+        self.list_the_docs.add_roles(&user_name, &roles)?;
+        Ok("".to_owned())
     }
 
     fn remove_roles(
@@ -300,13 +297,8 @@ impl CommandExecutor {
                 .collect(),
         };
 
-        match self.list_the_docs.remove_roles(&user_name, &roles)? {
-            Some(_) => Ok("".to_owned()),
-            None => Err(Error::InputError(format!(
-                "User with name '{}' not found",
-                &user_name
-            ))),
-        }
+        self.list_the_docs.remove_roles(&user_name, &roles)?;
+        Ok("".to_owned())
     }
 
     fn get_roles(&self, user_name: String) -> Result<String> {

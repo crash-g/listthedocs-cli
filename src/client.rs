@@ -129,48 +129,7 @@ impl ListTheDocs {
         }
     }
 
-    // This is a workaround because the service API does not return a JSON body in some cases
-    pub fn patch_without_response<B>(&self, endpoint_url: &str, body: &B) -> Result<Option<()>>
-    where
-        B: serde::ser::Serialize + std::fmt::Debug,
-    {
-        let api_key = self.api_key.as_ref().ok_or_else(|| {
-            Error::InputError("API key is required and was not provided".to_owned())
-        })?;
-
-        let endpoint_url = &[&self.base_url, endpoint_url].concat();
-        let response = minreq::patch(endpoint_url)
-            .with_header("Api-Key", api_key)
-            .with_json(body)?
-            .send()?;
-
-        match response.status_code {
-            200 => Ok(Some(())),
-            400 => Err(Error::InputError(format!(
-                "Bad request -- Response: {} -- Original request: {:#?}",
-                response.as_str()?,
-                body
-            ))),
-            401 => Err(Error::InputError("Authorization failed".to_owned())),
-            404 => Ok(None),
-            409 => Err(Error::InputError(format!(
-                "Conflict -- Response: {} -- Original request: {:#?}",
-                response.as_str()?,
-                body
-            ))),
-            x if x >= 500 && x < 600 => Err(Error::InputError(format!(
-                "The server returned an error -- Response {} -- Original request: {:#?}",
-                response.as_str()?,
-                body
-            ))),
-            _ => {
-                println!("{:?}", response.as_str());
-                unimplemented!()
-            }
-        }
-    }
-
-    pub fn remove(&self, endpoint_url: &str) -> Result<()> {
+    pub fn remove(&self, endpoint_url: &str, is_404_error: bool) -> Result<()> {
         let api_key = self.api_key.as_ref().ok_or_else(|| {
             Error::InputError("API key is required and was not provided".to_owned())
         })?;
@@ -181,8 +140,13 @@ impl ListTheDocs {
             .send()?;
 
         match response.status_code {
-            200 | 404 => Ok(()),
+            200 => Ok(()),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
+            404 if is_404_error => Err(Error::InputError(format!(
+                "Not found -- Response: {}",
+                response.as_str()?
+            ))),
+            404 => Ok(()),
             x if x >= 500 && x < 600 => Err(Error::InputError(format!(
                 "The server returned an error -- Response {}",
                 response.as_str()?,
@@ -194,11 +158,50 @@ impl ListTheDocs {
         }
     }
 
-    pub fn remove_roles(
-        &self,
-        user_name: &str,
-        roles: &[patch::ProjectRole],
-    ) -> Result<Option<()>> {
+    // For now, roles behave differently so we have specific methods for them
+
+    pub fn add_roles(&self, user_name: &str, roles: &[patch::ProjectRole]) -> Result<()> {
+        let api_key = self.api_key.as_ref().ok_or_else(|| {
+            Error::InputError("API key is required and was not provided".to_owned())
+        })?;
+
+        let endpoint_url = &[&self.base_url, "/api/v2/users/", &user_name, "/roles"].concat();
+        let response = minreq::patch(endpoint_url)
+            .with_header("Api-Key", api_key)
+            .with_json(&roles)?
+            .send()?;
+
+        match response.status_code {
+            200 => Ok(()),
+            400 => Err(Error::InputError(format!(
+                "Bad request -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
+            401 => Err(Error::InputError("Authorization failed".to_owned())),
+            404 => Err(Error::InputError(format!(
+                "Not found -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
+            409 => Err(Error::InputError(format!(
+                "Conflict -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
+            x if x >= 500 && x < 600 => Err(Error::InputError(format!(
+                "The server returned an error -- Response {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
+            _ => {
+                println!("{:?}", response.as_str());
+                unimplemented!()
+            }
+        }
+    }
+
+    pub fn remove_roles(&self, user_name: &str, roles: &[patch::ProjectRole]) -> Result<()> {
         let api_key = self.api_key.as_ref().ok_or_else(|| {
             Error::InputError("API key is required and was not provided".to_owned())
         })?;
@@ -210,14 +213,18 @@ impl ListTheDocs {
             .send()?;
 
         match response.status_code {
-            200 => Ok(Some(())),
+            200 => Ok(()),
             400 => Err(Error::InputError(format!(
                 "Bad request -- Response: {} -- Original request: {:#?}",
                 response.as_str()?,
                 roles
             ))),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
-            404 => Ok(None),
+            404 => Err(Error::InputError(format!(
+                "Not found -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
             x if x >= 500 && x < 600 => Err(Error::InputError(format!(
                 "The server returned an error -- Response {} -- Original request: {:#?}",
                 response.as_str()?,
