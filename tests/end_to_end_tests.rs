@@ -194,10 +194,7 @@ fn add_update_remove_version() -> Result<(), serde_json::Error> {
         version_name,
     ]);
     let output = cmd.output().expect("listthedocs output");
-    assert_eq!(
-        String::from_utf8_lossy(&output.stdout).trim(),
-        version_name
-    );
+    assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), version_name);
 
     Ok(())
 }
@@ -219,16 +216,7 @@ fn add_get_remove_user() -> Result<(), serde_json::Error> {
     let exe = find_exe();
 
     let mut cmd = process::Command::new(&exe);
-    cmd.args(&[
-        "-j",
-        "-u",
-        URL,
-        "-a",
-        API_KEY,
-        "user",
-        "remove",
-        user_name,
-    ]);
+    cmd.args(&["-j", "-u", URL, "-a", API_KEY, "user", "remove", user_name]);
     let _ = cmd.output().expect("listthedocs output");
 
     let mut cmd = process::Command::new(&exe);
@@ -254,21 +242,108 @@ fn add_get_remove_user() -> Result<(), serde_json::Error> {
     assert_eq!(result, user);
 
     let mut cmd = process::Command::new(&exe);
+    cmd.args(&["-j", "-u", URL, "-a", API_KEY, "user", "remove", user_name]);
+    let output = cmd.output().expect("listthedocs output");
+    assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), user_name);
+
+    Ok(())
+}
+
+#[test]
+#[ignore]
+fn add_get_remove_roles() -> Result<(), serde_json::Error> {
+    let project_code = "test-roles-project";
+    let user_name = "test-roles-user";
+
+    let exe = find_exe();
+
+    let mut cmd = process::Command::new(&exe);
     cmd.args(&[
         "-j",
         "-u",
         URL,
         "-a",
         API_KEY,
-        "user",
+        "project",
+        "remove",
+        project_code,
+    ]);
+    let _ = cmd.output().expect("listthedocs output");
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&["-j", "-u", URL, "-a", API_KEY, "user", "remove", user_name]);
+    let _ = cmd.output().expect("listthedocs output");
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j",
+        "-u",
+        URL,
+        "-a",
+        API_KEY,
+        "project",
+        "add",
+        project_code,
+        "witty description",
+    ]);
+    let _ = cmd.output().expect("listthedocs output");
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j", "-u", URL, "-a", API_KEY, "user", "add", user_name, "false",
+    ]);
+    let _ = cmd.output().expect("listthedocs output");
+
+    let first_role = format!("PROJECT_MANAGER/{}", project_code);
+    let second_role = format!("VERSION_MANAGER/{}", project_code);
+    let roles = vec![
+        Role {
+            role_name: "PROJECT_MANAGER".to_owned(),
+            project_code: project_code.to_owned(),
+        },
+        Role {
+            role_name: "VERSION_MANAGER".to_owned(),
+            project_code: project_code.to_owned(),
+        },
+    ];
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j",
+        "-u",
+        URL,
+        "-a",
+        API_KEY,
+        "role",
+        "add",
+        user_name,
+        &first_role,
+        &second_role,
+    ]);
+    let _ = cmd.output().expect("listthedocs output");
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&["-j", "-u", URL, "-a", API_KEY, "role", "get", user_name]);
+    let output = cmd.output().expect("listthedocs output");
+    let result: Vec<Role> = serde_json::from_str(&String::from_utf8_lossy(&output.stdout))?;
+    assert_eq!(result, roles);
+
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&[
+        "-j",
+        "-u",
+        URL,
+        "-a",
+        API_KEY,
+        "role",
         "remove",
         user_name,
+        &first_role,
     ]);
+    let _ = cmd.output().expect("listthedocs output");
+    let mut cmd = process::Command::new(&exe);
+    cmd.args(&["-j", "-u", URL, "-a", API_KEY, "role", "get", user_name]);
     let output = cmd.output().expect("listthedocs output");
-    assert_eq!(
-        String::from_utf8_lossy(&output.stdout).trim(),
-        user_name
-    );
+    let result: Vec<Role> = serde_json::from_str(&String::from_utf8_lossy(&output.stdout))?;
+    assert_eq!(result[0], roles[1]);
 
     Ok(())
 }
