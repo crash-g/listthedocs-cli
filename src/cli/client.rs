@@ -42,6 +42,11 @@ impl ListTheDocs {
                 body
             ))),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
+            403 => Err(Error::InputError(format!(
+                "Forbidden -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                body
+            ))),
             404 => Ok(None),
             409 => Err(Error::InputError(format!(
                 "Conflict -- Response: {} -- Original request: {:#?}",
@@ -114,6 +119,11 @@ impl ListTheDocs {
                 body
             ))),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
+            403 => Err(Error::InputError(format!(
+                "Forbidden -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                body
+            ))),
             404 => Ok(None),
             409 => Err(Error::InputError(format!(
                 "Conflict -- Response: {} -- Original request: {:#?}",
@@ -145,6 +155,10 @@ impl ListTheDocs {
         match response.status_code {
             200 => Ok(()),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
+            403 => Err(Error::InputError(format!(
+                "Forbidden -- Response: {}",
+                response.as_str()?,
+            ))),
             404 if is_404_error => Err(Error::InputError(format!(
                 "Not found -- Response: {}",
                 response.as_str()?
@@ -182,6 +196,11 @@ impl ListTheDocs {
                 roles
             ))),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
+            403 => Err(Error::InputError(format!(
+                "Forbidden -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
             404 => Err(Error::InputError(format!(
                 "Not found -- Response: {} -- Original request: {:#?}",
                 response.as_str()?,
@@ -223,6 +242,11 @@ impl ListTheDocs {
                 roles
             ))),
             401 => Err(Error::InputError("Authorization failed".to_owned())),
+            403 => Err(Error::InputError(format!(
+                "Forbidden -- Response: {} -- Original request: {:#?}",
+                response.as_str()?,
+                roles
+            ))),
             404 => Err(Error::InputError(format!(
                 "Not found -- Response: {} -- Original request: {:#?}",
                 response.as_str()?,
