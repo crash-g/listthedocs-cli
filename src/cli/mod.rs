@@ -10,9 +10,13 @@ mod entities;
 mod error;
 
 pub use command_line::{
-    options_from_args, Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand,
-    VersionCommand,
+    Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
 };
+
+#[allow(dead_code)]
+pub use command_line::options_from_args;
+// This function is used from main.rs but not from lib.rs, so cargo issues a warning (that we silence).
+
 pub use error::{Error, Result};
 
 use client::ListTheDocs;
