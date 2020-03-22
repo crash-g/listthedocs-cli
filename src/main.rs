@@ -1,9 +1,9 @@
 mod cli;
-use cli::{execute_command, options_from_args, Result};
+use cli::Result;
 
 fn main() -> Result<()> {
-    let command_line_options = options_from_args();
-    let result = execute_command(command_line_options)?;
+    let command_line_options = cli::options_from_args();
+    let result = cli::execute_command(command_line_options)?;
     println!("{}", result);
     Ok(())
 }

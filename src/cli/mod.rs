@@ -9,13 +9,13 @@ mod command_line;
 mod entities;
 mod error;
 
-pub use command_line::options_from_args;
+pub use command_line::{
+    options_from_args, Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand,
+    VersionCommand,
+};
 pub use error::{Error, Result};
 
 use client::ListTheDocs;
-use command_line::{
-    Command, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand, VersionCommand,
-};
 use entities::{get, patch, post};
 
 pub fn execute_command(opt: Opt) -> Result<String> {

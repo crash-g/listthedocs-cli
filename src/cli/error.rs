@@ -1,9 +1,9 @@
-use minreq;
+use minreq::Error as MinReqError;
 use std::{convert, error, fmt, result};
 
 #[derive(Debug)]
 pub enum Error {
-    ClientError(minreq::Error),
+    ClientError(MinReqError),
     InputError(String),
 }
 
@@ -29,8 +29,8 @@ impl error::Error for Error {
     }
 }
 
-impl convert::From<minreq::Error> for Error {
-    fn from(err: minreq::Error) -> Self {
+impl convert::From<MinReqError> for Error {
+    fn from(err: MinReqError) -> Self {
         Error::ClientError(err)
     }
 }

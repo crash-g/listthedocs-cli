@@ -1,3 +1,6 @@
 mod cli;
 
-pub use cli::{execute_command, options_from_args, Error};
+pub use cli::{
+    execute_command, Command, Error, Opt, ProjectCommand, ProjectRole, RoleCommand, UserCommand,
+    VersionCommand,
+};

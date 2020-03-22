@@ -1,4 +1,7 @@
 use minreq;
+use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
+use std::fmt::Debug;
 
 use super::entities::patch;
 use super::error::{Error, Result};
@@ -18,8 +21,8 @@ impl ListTheDocs {
 
     pub fn post<B, R>(&self, endpoint_url: &str, body: &B) -> Result<Option<R>>
     where
-        B: serde::ser::Serialize + std::fmt::Debug,
-        R: serde::de::DeserializeOwned,
+        B: Serialize + Debug,
+        R: DeserializeOwned,
     {
         let api_key = self.api_key.as_ref().ok_or_else(|| {
             Error::InputError("API key is required and was not provided".to_owned())
@@ -59,7 +62,7 @@ impl ListTheDocs {
 
     pub fn get<R>(&self, endpoint_url: &str, with_api_key: bool) -> Result<Option<R>>
     where
-        R: serde::de::DeserializeOwned,
+        R: DeserializeOwned,
     {
         let endpoint_url = &[&self.base_url, endpoint_url].concat();
         let response = if with_api_key {
@@ -90,8 +93,8 @@ impl ListTheDocs {
 
     pub fn patch<B, R>(&self, endpoint_url: &str, body: &B) -> Result<Option<R>>
     where
-        B: serde::ser::Serialize + std::fmt::Debug,
-        R: serde::de::DeserializeOwned,
+        B: Serialize + Debug,
+        R: DeserializeOwned,
     {
         let api_key = self.api_key.as_ref().ok_or_else(|| {
             Error::InputError("API key is required and was not provided".to_owned())
